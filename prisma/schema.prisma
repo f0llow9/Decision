@@ -1,0 +1,146 @@
+// Decision Project - schema.prisma design draft
+// Purpose:
+// - serve as the MVP source of truth for Prisma data modeling
+// - align README / architecture / decision_algorithm / decision_question_mapping
+// - keep relations explicit
+// - use Float consistently for money-like values in MVP
+//
+// Notes:
+// 1. UI-facing final score field is unified as `score`
+// 2. Decision questionnaire raw inputs are stored on the Decision model
+// 3. Algorithm breakdown fields are persisted for explainability/debugging
+// 4. Child records use cascading delete for safe cleanup
+// 5. Heartbeat uses `recordedOn` + unique constraint to enforce one record per day
+// 6. Modified for SQLite compatibility (Enums -> String, @db.Date -> removed)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// =========================
+// Decision Domain
+// =========================
+
+model Decision {
+  id                  String   @id @default(uuid())
+  name                String
+  note                String?
+
+  // questionnaire raw inputs
+  price               Float
+  usageDuration       String       @map("usage_duration")
+  usageFrequency      String      @map("usage_frequency")
+  certaintyLevel      String      @map("certainty_level")
+  consumptionType     String     @map("consumption_type")
+  hasAlternative      Boolean             @map("has_alternative")
+  alternativeCostLevel String @map("alternative_cost_level")
+  nonPurchaseImpact   String   @map("non_purchase_impact")
+  affectedPeopleCount String @map("affected_people_count")
+  desireDuration      String      @map("desire_duration")
+
+  // derived scoring fields
+  score               Float
+  status              String
+  uvScore             Float  @default(0) @map("uv_score")
+  spScore             Float  @default(0) @map("sp_score")
+  ppScore             Float  @default(0) @map("pp_score")
+  psScore             Float  @default(0) @map("ps_score")
+
+  // useful aggregates for cards/detail pages
+  heartbeatCount      Int    @default(0) @map("heartbeat_count")
+  behaviorTotalAmount Float  @default(0) @map("behavior_total_amount")
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  heartbeats          HeartbeatRecord[]
+  behaviors           BehaviorRecord[]
+
+  @@index([status])
+  @@index([updatedAt])
+  @@map("decisions")
+}
+
+model HeartbeatRecord {
+  id         String   @id @default(uuid())
+  decisionId String   @map("decision_id")
+
+  // normalized day key to enforce "once per day"
+  recordedOn DateTime @map("recorded_on") 
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  decision   Decision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+
+  @@unique([decisionId, recordedOn])
+  @@index([decisionId, createdAt])
+  @@map("heartbeat_records")
+}
+
+model BehaviorRecord {
+  id         String   @id @default(uuid())
+  decisionId String   @map("decision_id")
+  amount     Float
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  decision   Decision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+
+  @@index([decisionId, createdAt])
+  @@map("behavior_records")
+}
+
+// =========================
+// Subscription Domain
+// =========================
+
+model Subscription {
+  id                String                     @id @default(uuid())
+  name              String
+  price             Float
+  billingCycle      String               @map("billing_cycle")
+  nextBillingDate   DateTime                   @map("next_billing_date")
+  usageFrequency    String? @map("usage_frequency")
+  autoRenew         Boolean                    @default(true) @map("auto_renew")
+  note              String?
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
+
+  @@index([nextBillingDate])
+  @@map("subscriptions")
+}
+
+// =========================
+// Expense Domain
+// =========================
+
+model ExpenseCategory {
+  id         String          @id @default(uuid())
+  name       String
+  note       String?
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  records    ExpenseRecord[]
+
+  @@index([updatedAt])
+  @@map("expense_categories")
+}
+
+model ExpenseRecord {
+  id         String          @id @default(uuid())
+  categoryId String          @map("category_id")
+  amount     Float
+  date       DateTime
+  note       String?
+  createdAt  DateTime        @default(now()) @map("created_at")
+
+  category   ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, date])
+  @@map("expense_records")
+}
