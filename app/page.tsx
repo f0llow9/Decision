@@ -1,9 +1,11 @@
-import { CreateBar } from "@/components/dashboard/CreateBar";
+import { Suspense } from "react";
 import { CardBoard } from "@/components/dashboard/CardBoard";
+import { CreateBar } from "@/components/dashboard/CreateBar";
 import { getDecisions, getSubscriptions, getExpenses } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function Home() {
   const [decisions, subscriptions, expenses] = await Promise.all([
