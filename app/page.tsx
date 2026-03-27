@@ -3,6 +3,7 @@ import { CardBoard } from "@/components/dashboard/CardBoard";
 import { getDecisions, getSubscriptions, getExpenses } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function Home() {
   const [decisions, subscriptions, expenses] = await Promise.all([

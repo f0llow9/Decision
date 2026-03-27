@@ -4,6 +4,7 @@ import { ExpenseRecordList } from "@/components/expense/ExpenseRecordList";
 import { DeleteButton } from "@/components/common/DeleteButton";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface PageProps {
   params: {
