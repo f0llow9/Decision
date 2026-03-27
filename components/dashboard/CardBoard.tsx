@@ -91,16 +91,8 @@ export function CardBoard({ decisions, subscriptions, expenses }: CardBoardProps
         );
       })}
 
-      {/* Empty States */}
-      {decisions.length === 0 && subscriptions.length === 0 && expenses.length === 0 && (
-        <>
-          <EmptyCard />
-          <EmptyCard />
-        </>
-      )}
-      
-      {/* Always show at least one empty card for creating new things if list is short */}
-      {(decisions.length + subscriptions.length + expenses.length) < 8 && <EmptyCard />}
+      {/* Always show an Add Card button */}
+      <EmptyCard />
     </div>
   );
 }
