@@ -13,18 +13,24 @@ interface PageProps {
 }
 
 export default async function ExpenseDetailPage({ params }: PageProps) {
+  const id = params?.id;
+
+  if (!id) {
+    console.error("No ID provided in params");
+    notFound();
+  }
+
   const expense = await prisma.expenseCategory.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       records: {
-        orderBy: {
-          date: "desc",
-        },
-      },
-    },
+        orderBy: { date: 'desc' }
+      }
+    }
   });
 
   if (!expense) {
+    console.error(`Expense not found for ID: ${id}`);
     notFound();
   }
 

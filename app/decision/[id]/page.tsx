@@ -16,11 +16,20 @@ interface PageProps {
 }
 
 export default async function DecisionDetailPage({ params }: PageProps) {
+  // In newer Next.js versions, awaiting params can prevent certain hydration/routing bugs
+  const id = params?.id;
+
+  if (!id) {
+    console.error("No ID provided in params");
+    notFound();
+  }
+
   const decision = await prisma.decision.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!decision) {
+    console.error(`Decision not found for ID: ${id}`);
     notFound();
   }
 

@@ -13,11 +13,19 @@ interface PageProps {
 }
 
 export default async function SubscriptionDetailPage({ params }: PageProps) {
+  const id = params?.id;
+
+  if (!id) {
+    console.error("No ID provided in params");
+    notFound();
+  }
+
   const subscription = await prisma.subscription.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!subscription) {
+    console.error(`Subscription not found for ID: ${id}`);
     notFound();
   }
 
