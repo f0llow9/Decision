@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { createDecisionAction, createSubscriptionAction, createExpenseCategoryAction } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 const CREATE_TYPES = [
   { id: "decision", label: "新建决策", placeholder: "输入你正在考虑的消费决策（例如：升级 MacBook）" },
@@ -18,6 +19,7 @@ interface CreateBarProps {
 }
 
 export function CreateBar({ defaultType = "decision", hideTypeSelector = false }: CreateBarProps) {
+  const router = useRouter();
   const initialType = CREATE_TYPES.find(t => t.id === defaultType) || CREATE_TYPES[0];
   const [selectedType, setSelectedType] = useState(initialType);
   const [inputValue, setInputValue] = useState("");
@@ -32,12 +34,15 @@ export function CreateBar({ defaultType = "decision", hideTypeSelector = false }
       switch (selectedType.id) {
         case "decision":
           result = await createDecisionAction(inputValue);
+          if (result?.success && result.id) router.push(`/decision/${result.id}`);
           break;
         case "subscription":
           result = await createSubscriptionAction(inputValue);
+          if (result?.success && result.id) router.push(`/subscription/${result.id}`);
           break;
         case "expense":
           result = await createExpenseCategoryAction(inputValue);
+          if (result?.success && result.id) router.push(`/expense/${result.id}`);
           break;
       }
 
