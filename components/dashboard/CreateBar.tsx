@@ -35,15 +35,12 @@ export function CreateBar({ defaultType = "decision", hideTypeSelector = false }
         switch (selectedType.id) {
           case "decision":
             result = await createDecisionAction(inputValue);
-            if (result?.success && result.id) router.push(`/decision/${result.id}`);
             break;
           case "subscription":
             result = await createSubscriptionAction(inputValue);
-            if (result?.success && result.id) router.push(`/subscription/${result.id}`);
             break;
           case "expense":
             result = await createExpenseCategoryAction(inputValue);
-            if (result?.success && result.id) router.push(`/expense/${result.id}`);
             break;
         }
 
