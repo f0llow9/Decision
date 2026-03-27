@@ -30,27 +30,31 @@ export function CreateBar({ defaultType = "decision", hideTypeSelector = false }
     if (!inputValue.trim()) return;
 
     startTransition(async () => {
-      let result;
-      switch (selectedType.id) {
-        case "decision":
-          result = await createDecisionAction(inputValue);
-          if (result?.success && result.id) router.push(`/decision/${result.id}`);
-          break;
-        case "subscription":
-          result = await createSubscriptionAction(inputValue);
-          if (result?.success && result.id) router.push(`/subscription/${result.id}`);
-          break;
-        case "expense":
-          result = await createExpenseCategoryAction(inputValue);
-          if (result?.success && result.id) router.push(`/expense/${result.id}`);
-          break;
-      }
+      let result: { success: boolean; message: string; id?: string } | undefined;
+      try {
+        switch (selectedType.id) {
+          case "decision":
+            result = await createDecisionAction(inputValue);
+            if (result?.success && result.id) router.push(`/decision/${result.id}`);
+            break;
+          case "subscription":
+            result = await createSubscriptionAction(inputValue);
+            if (result?.success && result.id) router.push(`/subscription/${result.id}`);
+            break;
+          case "expense":
+            result = await createExpenseCategoryAction(inputValue);
+            if (result?.success && result.id) router.push(`/expense/${result.id}`);
+            break;
+        }
 
-      if (result?.success) {
-        setInputValue("");
-        toast.success(result.message);
-      } else {
-        toast.error(result?.message || "创建失败");
+        if (result?.success) {
+          setInputValue("");
+          toast.success(result.message);
+        } else {
+          toast.error(result?.message || "创建失败");
+        }
+      } catch (error) {
+        toast.error("创建失败");
       }
     });
   };

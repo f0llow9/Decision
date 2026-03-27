@@ -6,11 +6,11 @@ import { calculateScore, DecisionInput } from "@/lib/algorithm";
 
 // ... existing actions ...
 
-export async function createDecisionAction(name: string) {
+export async function createDecisionAction(name: string): Promise<{success: boolean; message: string; id?: string}> {
   if (!name.trim()) return { success: false, message: "名称不能为空" };
 
   try {
-    await prisma.decision.create({
+    const decision = await prisma.decision.create({
       data: {
         name,
         // MVP Defaults
@@ -35,21 +35,21 @@ export async function createDecisionAction(name: string) {
       },
     });
     revalidatePath("/");
-    return { success: true, message: "决策草稿创建成功" };
+    return { success: true, message: "决策草稿创建成功", id: decision.id };
   } catch (error) {
     console.error("Failed to create decision:", error);
     return { success: false, message: "创建失败，请重试" };
   }
 }
 
-export async function createSubscriptionAction(name: string) {
+export async function createSubscriptionAction(name: string): Promise<{success: boolean; message: string; id?: string}> {
   if (!name.trim()) return { success: false, message: "名称不能为空" };
 
   try {
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-    await prisma.subscription.create({
+    const subscription = await prisma.subscription.create({
       data: {
         name,
         // MVP Defaults
@@ -61,25 +61,25 @@ export async function createSubscriptionAction(name: string) {
       },
     });
     revalidatePath("/");
-    return { success: true, message: "订阅草稿创建成功" };
+    return { success: true, message: "订阅草稿创建成功", id: subscription.id };
   } catch (error) {
     console.error("Failed to create subscription:", error);
     return { success: false, message: "创建失败，请重试" };
   }
 }
 
-export async function createExpenseCategoryAction(name: string) {
+export async function createExpenseCategoryAction(name: string): Promise<{success: boolean; message: string; id?: string}> {
   if (!name.trim()) return { success: false, message: "名称不能为空" };
 
   try {
-    await prisma.expenseCategory.create({
+    const category = await prisma.expenseCategory.create({
       data: {
         name,
         // No records initially
       },
     });
     revalidatePath("/");
-    return { success: true, message: "支出分类创建成功" };
+    return { success: true, message: "支出分类创建成功", id: category.id };
   } catch (error) {
     console.error("Failed to create expense category:", error);
     return { success: false, message: "创建失败，请重试" };
